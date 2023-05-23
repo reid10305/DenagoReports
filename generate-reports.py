@@ -60,38 +60,44 @@ def generateUPSPlots(df, show):
     if show:
         plt.show()
 
-def generateLTLReport():
+def generateLTLReport(show, file):
     '''generate LTL report'''
 
 if __name__ == '__main__':
 
     showCharts = False
-    inputFile = 'UPS-Shipments_L30D.csv'
+    uinputFile = 'UPS-Shipments_L30D.csv'
+    linputFile = 'LTL-Shipments_L30D.csv'
     upsonly= False
     ltlonly = False
 
     # define arguments
-    opts, args = getopt.getopt(sys.argv[1:], shortopts='hs:u:l:', longopts=['input=', 'show=', 'upsonly=', 'ltlonly='])
+    opts, args = getopt.getopt(sys.argv[1:], shortopts='hsul', longopts=['linput=', 'uinput=', 'show=', 'upsonly=', 'ltlonly='])
 
     # parse arguments
     for opt, arg in opts:
         if opt == '-h':
-            print('generate-reports.py -s <t/f> -u <t/f> -l <t/f> --input <inputfile>')
+            print('generate-reports.py -s <show charts after running> -u <ups only> -l <ltl only>')
 
         elif opt in ('-s', '--show'):
-            if arg == 't':
-                showCharts = True
+            showCharts = True
 
         elif opt in ('-u', '--upsonly'):
-            if arg == 't':
-                upsonly = True
+            upsonly = True
         
         elif opt in ('-l', '--ltlonly'):
-            if arg == 't':
-                ltlonly = True
+            ltlonly = True
 
-        elif opt == '--input':
-            inputFile = arg
 
-    generateUPSReport()
-    generateLTLReport()
+
+    if (upsonly and not ltlonly):
+        generateUPSReport(showCharts, uinputFile)
+
+    elif (ltlonly and not upsonly):
+        generateLTLReport(showCharts, linputFile)
+        
+    else:
+        generateUPSReport(showCharts, uinputFile)
+        generateLTLReport(showCharts, linputFile)
+
+
