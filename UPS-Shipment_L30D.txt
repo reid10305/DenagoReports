@@ -1,0 +1,25 @@
+SELECT 
+	Transaction.tranDate AS Date,
+	Transaction.TranID AS Order_Number,
+	Item.ItemID AS SKU,
+	TransactionLine.Quantity AS QTY,
+	Item.weight AS UnitWeight,
+	( Item.CustItemItem_Length *
+	  Item.CustItemItem_Width * 
+	  Item.CustItemItem_Height ) AS Unit_Volume
+FROM 
+	Transaction 
+	INNER JOIN TransactionShipment ON
+		(Transaction.ID = TransactionShipment.doc)
+	JOIN Entity ON 
+		(Transaction.entity = Entity.ID)
+	JOIN TransactionLine ON	
+		(TransactionLine.Transaction = Transaction.ID)
+	JOIN Item ON
+		(TransactionLine.Item = Item.ID)
+WHERE 
+	Entity.EntityID = 'Denago.com' AND
+	TransactionShipment.ShippingMethod = 'UPS Ground' AND
+	BUILTIN.DF(Transaction.Status) = 'Sales Order : Billed' AND
+	Item.isSerialItem = 'T' AND
+	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO30', 'START' )

@@ -1,0 +1,32 @@
+SELECT 
+	Transaction.TranID AS Order_Number,
+	Transaction.CreatedDate AS Start_Date,
+	Transaction.ShipDate AS Ship_Date,
+	TransactionShipment.ShippingMethod AS LTL_Carrier,
+	TransactionShipment.DestinationAddress AS Ship_To_Address,
+	Transaction.CUSTBODYCUSTOM_SHIPPING_CHARGE AS Shipping_Cost,
+	Transaction.CUSTBODYTRACKING_STATUS AS Delivery_Status,
+	Item.ItemID AS SKU,
+	TransactionLine.Quantity AS QTY,
+	Item.Weight AS Unit_Weight,
+	( Item.CustItemItem_Length *
+	  Item.CustItemItem_Width * 
+	  Item.CustItemItem_Height) AS Unit_Volume
+FROM 
+	Transaction 
+	INNER JOIN TransactionShipment ON
+		(Transaction.ID = TransactionShipment.doc)
+	JOIN Entity ON 
+		(Transaction.entity = Entity.ID)
+	JOIN TransactionLine ON
+		(TransactionLine.Transaction = Transaction.ID)
+	JOIN Item ON
+		 (TransactionLine.Item = Item.ID )
+WHERE 
+	Entity.EntityID = 'Denago.com' AND
+	BUILTIN.DF(Transaction.Status) = 'Sales Order : Billed' AND
+	TransactionShipment.ShippingMethod <> 'Pick Up' AND
+	TransactionShipment.ShippingMethod NOT LIKE '%UPS%' AND
+	TransactionShipment.ShippingMethod NOT LIKE '%USPS%' AND
+	Item.Weight > 0 AND
+	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO30', 'START' )
