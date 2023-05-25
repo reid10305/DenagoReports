@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys, getopt
+from P1API import P1Helper
 
 def generateUPSReport(show, file):
     '''generate UPS report'''
@@ -53,15 +54,52 @@ def generateUPSPlots(df, show):
 
 
     # save plots to file
-    qtyByDay.figure.savefig('QTY-By-Day.pdf')
-    qtyBySku.figure.savefig('QTY-By-SKU.pdf')
-    plt.savefig('Volume-By-Day.pdf')
+    qtyByDay.figure.savefig('/UPS/QTY-By-Day.pdf')
+    qtyBySku.figure.savefig('/UPS/QTY-By-SKU.pdf')
+    plt.savefig('/UPS/Volume-By-Day.pdf')
 
     if show:
         plt.show()
 
+''' ************************************ '''
+
 def generateLTLReport(show, file):
     '''generate LTL report'''
+
+    data = pd.read_csv(file)
+    df = pd.DataFrame(data)
+    
+    # make qty positive
+    df['QTY'] = df['QTY'].apply(lambda x: x*-1)
+
+    # get total weight and volume
+    df['totWeight'] = df['QTY'] * df['UNIT_WEIGHT']
+    df['totVolume'] = df['QTY'] * df['UNIT_VOLUME'] / (12 ** 3)
+
+    # get tracking info from  P1 API
+    Tracker = P1Helper() 
+    #add tracking info columns
+    df['deliveryStatus'] = Tracker.track(df['ORDER_NUMBER'])['deliveryStatus']
+    df['statusDate'] = Tracker.track(df['ORDER_NUMBER'])['deliveryDate']
+
+        
+    generateLTLPlots(df, show)
+
+def generateLTLPlots(df, show):
+    ''' generate LTL Plots '''
+    qtyByDay = df.plot(x='DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
+    qtyBySku = df.plot(x='SKU', y = 'QTY', kind='bar', title = 'QTY by SKU', rot=90, figsize=(20,10))
+    volByDay = df.plot(x='DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
+    volByDay[0].set_ylabel('Weight (lbs)')
+    volByDay[1].set_ylabel('Volume (Cubic Feet)')
+
+    # save plot files
+    qtyByDay.figure.savefig('/LTL/QTY-By-Day.pdf')
+    qtyBySku.figure.savefig('/LTL/QTY-By-SKU.pdf')
+    plt.savefig('/LTL/Volume-By-Day.pdf')
+
+
+
 
 if __name__ == '__main__':
 
