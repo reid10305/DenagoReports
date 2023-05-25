@@ -133,9 +133,16 @@ if __name__ == '__main__':
 
     elif (ltlonly and not upsonly):
         generateLTLReport(showCharts, linputFile)
-        
+               
     else:
         generateUPSReport(showCharts, uinputFile)
         generateLTLReport(showCharts, linputFile)
+        
+    # create directories
+    try:
+        os.mkdir('/LTL')
+        os.mkdir('/UPS')
+    except FileExistsError as e:
+        pass
 
 
