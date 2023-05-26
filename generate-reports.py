@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import sys, getopt
+import sys, getopt, os
 from P1API import P1Helper
 
 def generateUPSReport(show, file):
@@ -54,9 +54,9 @@ def generateUPSPlots(df, show):
 
 
     # save plots to file
-    qtyByDay.figure.savefig('/UPS/QTY-By-Day.pdf')
-    qtyBySku.figure.savefig('/UPS/QTY-By-SKU.pdf')
-    plt.savefig('/UPS/Volume-By-Day.pdf')
+    qtyByDay.figure.savefig('UPS/QTY-By-Day.pdf')
+    qtyBySku.figure.savefig('UPS/QTY-By-SKU.pdf')
+    plt.savefig('UPS/Volume-By-Day.pdf')
 
     if show:
         plt.show()
@@ -79,10 +79,9 @@ def generateLTLReport(show, file):
     # get tracking info from  P1 API
     Tracker = P1Helper() 
     #add tracking info columns
-    df['deliveryStatus'] = Tracker.track(df['ORDER_NUMBER'])['deliveryStatus']
+    df['Delivery_Status'] = Tracker.track(df['ORDER_NUMBER'])['deliveryStatus']
     df['statusDate'] = Tracker.track(df['ORDER_NUMBER'])['deliveryDate']
 
-        
     generateLTLPlots(df, show)
 
 def generateLTLPlots(df, show):
@@ -94,12 +93,12 @@ def generateLTLPlots(df, show):
     volByDay[1].set_ylabel('Volume (Cubic Feet)')
 
     # save plot files
-    qtyByDay.figure.savefig('/LTL/QTY-By-Day.pdf')
-    qtyBySku.figure.savefig('/LTL/QTY-By-SKU.pdf')
-    plt.savefig('/LTL/Volume-By-Day.pdf')
+    qtyByDay.figure.savefig('LTL/QTY-By-Day.pdf')
+    qtyBySku.figure.savefig('LTL/QTY-By-SKU.pdf')
+    plt.savefig('LTL/Volume-By-Day.pdf')
 
-
-
+    if show:
+        plt.show()
 
 if __name__ == '__main__':
 
@@ -111,6 +110,13 @@ if __name__ == '__main__':
 
     # define arguments
     opts, args = getopt.getopt(sys.argv[1:], shortopts='hsul', longopts=['linput=', 'uinput=', 'show=', 'upsonly=', 'ltlonly='])
+
+    # create directories
+    try:
+        os.mkdir('LTL')
+        os.mkdir('UPS')
+    except FileExistsError as e:
+        pass
 
     # parse arguments
     for opt, arg in opts:
@@ -138,11 +144,5 @@ if __name__ == '__main__':
         generateUPSReport(showCharts, uinputFile)
         generateLTLReport(showCharts, linputFile)
         
-    # create directories
-    try:
-        os.mkdir('/LTL')
-        os.mkdir('/UPS')
-    except FileExistsError as e:
-        pass
 
 
