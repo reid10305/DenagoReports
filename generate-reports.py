@@ -76,11 +76,20 @@ def generateLTLReport(show, file):
     df['totWeight'] = df['QTY'] * df['UNIT_WEIGHT']
     df['totVolume'] = df['QTY'] * df['UNIT_VOLUME'] / (12 ** 3)
 
+    orderNUms = df['ORDER_NUMBER']
+    tracking_status = []
+    date = []
+
+    for i in orderNUms:
+        print(i)
+
+
     # get tracking info from  P1 API
     Tracker = P1Helper() 
+
     #add tracking info columns
-    df['Delivery_Status'] = Tracker.track(df['ORDER_NUMBER'])['deliveryStatus']
-    df['statusDate'] = Tracker.track(df['ORDER_NUMBER'])['deliveryDate']
+    df['DELIVERY_STATUS'] = P1Helper.track(df['ORDER_NUMBER'])
+        
 
     generateLTLPlots(df, show)
 
