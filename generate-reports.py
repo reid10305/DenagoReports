@@ -66,6 +66,8 @@ def generateUPSPlots(df, show):
 def generateLTLReport(show, file):
     '''generate LTL report'''
 
+    print('Generating LTL Report...', end = '\n')
+
     data = pd.read_csv(file)
     df = pd.DataFrame(data)
     
@@ -76,28 +78,34 @@ def generateLTLReport(show, file):
     df['totWeight'] = df['QTY'] * df['UNIT_WEIGHT']
     df['totVolume'] = df['QTY'] * df['UNIT_VOLUME'] / (12 ** 3)
 
-    orderNUms = df['ORDER_NUMBER']
-    tracking_status = []
-    date = []
-
-    for i in orderNUms:
-        print(i)
-
+    df['DELIVERY_DATE'] = pd.Series(dtype='str')
 
     # get tracking info from  P1 API
     Tracker = P1Helper() 
+    print('Getting tracking from Priority1.', end='')
+    for i, j in df.iterrows():
+        if (i % 50 == 0):
+            print('.', end = '')
+        try:
+            ordnum = df.loc[i, ['ORDER_NUMBER']][0]
+            trackstat = Tracker.track(ordnum)
 
-    #add tracking info columns
-    df['DELIVERY_STATUS'] = P1Helper.track(df['ORDER_NUMBER'])
-        
+            df.loc[i, ['DELIVERY_STATUS']] = trackstat['status']
+            #print(df.loc[i, ['DELIVERY_STATUS']])
+            df.loc[i, ['DELIVERY_DATE']] = trackstat['deliveryDate']
+            #print(df.loc[i, ['DELIVERY_DATE']])
+        except:
+            continue
 
+    print('Done', end='\n')
     generateLTLPlots(df, show)
 
 def generateLTLPlots(df, show):
     ''' generate LTL Plots '''
-    qtyByDay = df.plot(x='DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
+    print('Generating LTL Plots...')
+    qtyByDay = df.plot(x='SHIP_DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
     qtyBySku = df.plot(x='SKU', y = 'QTY', kind='bar', title = 'QTY by SKU', rot=90, figsize=(20,10))
-    volByDay = df.plot(x='DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
+    volByDay = df.plot(x='SHIP_DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
     volByDay[0].set_ylabel('Weight (lbs)')
     volByDay[1].set_ylabel('Volume (Cubic Feet)')
 
@@ -153,5 +161,5 @@ if __name__ == '__main__':
         generateUPSReport(showCharts, uinputFile)
         generateLTLReport(showCharts, linputFile)
         
-
+    print('Done.')
 
