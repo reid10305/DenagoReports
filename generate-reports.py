@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys, getopt, os
 from P1API import P1Helper
+from tqdm import tqdm
 
 def generateUPSReport(show, file):
     '''generate UPS report'''
@@ -62,11 +63,15 @@ def generateUPSPlots(df, show):
         plt.show()
 
 ''' ************************************ '''
+'''status bar https://stackoverflow.com/questions/18603270/progress-indicator-during-pandas-operations'''
 
 def generateLTLReport(show, file):
     '''generate LTL report'''
 
     print('Generating LTL Report...', end = '\n')
+
+    #progress bar
+    tqdm.pandas()
 
     data = pd.read_csv(file)
     df = pd.DataFrame(data)
@@ -82,12 +87,14 @@ def generateLTLReport(show, file):
 
     # get tracking info from  P1 API
     Tracker = P1Helper() 
-    print('Getting tracking from Priority1.', end='')
-    for i, j in df.iterrows():
-        if (i % 50 == 0):
-            print('.', end = '')
+
+    trackingPbar = tqdm(df.iterrows(), total=len(df))
+    
+    for i, j in trackingPbar:        
+        ordnum = df.loc[i, ['ORDER_NUMBER']][0] 
+        trackingPbar.set_description(f'Tracking {ordnum}')
         try:
-            ordnum = df.loc[i, ['ORDER_NUMBER']][0]
+           
             trackstat = Tracker.track(ordnum)
 
             df.loc[i, ['DELIVERY_STATUS']] = trackstat['status']
@@ -97,12 +104,12 @@ def generateLTLReport(show, file):
         except:
             continue
 
-    print('Done', end='\n')
+    
     generateLTLPlots(df, show)
 
 def generateLTLPlots(df, show):
     ''' generate LTL Plots '''
-    print('Generating LTL Plots...')
+    
     qtyByDay = df.plot(x='SHIP_DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
     qtyBySku = df.plot(x='SKU', y = 'QTY', kind='bar', title = 'QTY by SKU', rot=90, figsize=(20,10))
     volByDay = df.plot(x='SHIP_DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
