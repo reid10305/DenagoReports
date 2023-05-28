@@ -7,6 +7,8 @@ from tqdm import tqdm
 def generateUPSReport(show, file):
     '''generate UPS report'''
 
+    print('Generating UPS Report...')
+
     data = pd.read_csv(file)
     df = pd.DataFrame(data)
 
@@ -42,7 +44,7 @@ def generateUPSGeneralReport(df):
     line5 = f"Total units shipped L30D: {totalUnitsShipped}\n"
 
     # write report to file
-    file = open('UPS-Report.txt', 'w')
+    file = open('UPS/UPS-Report.txt', 'w')
     file.writelines([line1, line2, line3, line4, line5])
     file.close()
 
@@ -63,7 +65,6 @@ def generateUPSPlots(df, show):
         plt.show()
 
 ''' ************************************ '''
-'''status bar https://stackoverflow.com/questions/18603270/progress-indicator-during-pandas-operations'''
 
 def generateLTLReport(show, file):
     '''generate LTL report'''
@@ -155,6 +156,38 @@ def generateLTLPlots(df, show):
 
     if show:
         plt.show()
+
+    generateLTLGeneralReport(df)
+
+def generateLTLGeneralReport(df):
+    # generate values
+    avgWeightPerDay = df.groupby('SHIP_DATE')['totWeight'].sum().mean()
+    avgVolPerDay = df.groupby('SHIP_DATE')['totVolume'].sum().mean()
+    maxWeightL30D = df.groupby('SHIP_DATE')['totWeight'].sum().max()
+    maxVolL30D = df.groupby('SHIP_DATE')['totVolume'].sum().max()
+    totalUnitsShipped = df['QTY'].sum()
+    avgCostPerDay = df.groupby('SHIP_DATE')['SHIPPING_COST'].sum().mean()
+    avgCostPerCarrier = df.groupby('LTL_CARRIER')['SHIPPING_COST'].sum().mean()
+    avgCostPerState = df.groupby('SHIP_TO_ADDRESS')['SHIPPING_COST'].sum().mean()
+    totalCostL30D = df['SHIPPING_COST'].sum()
+
+    # write lines
+    line1 = f"Average weight per day: {avgWeightPerDay} lbs\n"
+    line2 = f"Average volume per day: {avgVolPerDay} ft^3\n"
+    line3 = f"Maximum weight L30D: {maxWeightL30D} lbs\n"
+    line4 = f"Maximum volume L30D: {maxVolL30D} ft^3\n"
+    line5 = f"Total units shipped L30D: {totalUnitsShipped}\n"
+    line6 = f"Average cost per day: {avgCostPerDay}\n"
+    line7 = f"Average cost per state: {avgCostPerState}\n"
+    line8 = f"Average cost per carrier: {avgCostPerCarrier}\n"
+    line9 = f"Total cost L30D: {totalCostL30D}"
+
+    # write report to file
+    file = open('LTL/LTL-Report.txt', 'w')
+    file.writelines([line1, line2, line3, line4, line5, line6, line7, line8, line9])
+    file.close()
+
+
 
 if __name__ == '__main__':
 
