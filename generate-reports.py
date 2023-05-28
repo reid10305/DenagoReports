@@ -120,6 +120,8 @@ def generateLTLPlots(df, show):
     qtyByDay = df.plot(x='SHIP_DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
     qtyBySku = df['SKU'].value_counts().plot(ax=ax, kind='bar', xlabel='SKU', ylabel='Frequency', rot=90, figsize=(20,10), title='Quantity by SKU')
     volByDay = df.plot(x='SHIP_DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
+    plt.savefig('LTL/Volume-By-Day.pdf')
+
     volByDay[0].set_ylabel('Weight (lbs)')
     volByDay[1].set_ylabel('Volume (Cubic Feet)')
 
@@ -147,7 +149,6 @@ def generateLTLPlots(df, show):
     # save plot files
     qtyByDay.figure.savefig('LTL/QTY-By-Day.pdf')
     qtyBySku.figure.savefig('LTL/QTY-By-SKU.pdf')
-    plt.savefig('LTL/Volume-By-Day.pdf')
     costplot.figure.savefig('LTL/Cost-by-State.pdf')
     costplot2.figure.savefig('LTL/Cost-by-Carrier.pdf')
     tranplot.figure.savefig('LTL/Transit-Time-by-Carrier.pdf')
