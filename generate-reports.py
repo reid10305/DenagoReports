@@ -113,9 +113,11 @@ def generateLTLReport(show, file):
 
 def generateLTLPlots(df, show):
     ''' generate LTL Plots '''
+
+    fig, ax = plt.subplots()
     
     qtyByDay = df.plot(x='SHIP_DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
-    qtyBySku = df.plot(x='SKU', y = 'QTY', kind='bar', title = 'QTY by SKU', rot=90, figsize=(20,10))
+    qtyBySku = df['SKU'].value_counts().plot(ax=ax, kind='bar', xlabel='SKU', ylabel='Frequency', rot=90, figsize=(20,10), title='Quantity by SKU')
     volByDay = df.plot(x='SHIP_DATE', y = ['totWeight', 'totVolume'], kind='line', title = 'Volume Per Day', grid = True, subplots=True, rot=45,figsize=(20,10))
     volByDay[0].set_ylabel('Weight (lbs)')
     volByDay[1].set_ylabel('Volume (Cubic Feet)')
