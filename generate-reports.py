@@ -84,7 +84,7 @@ def generateLTLReport(show, file):
     df['totVolume'] = df['QTY'] * df['UNIT_VOLUME'] / (12 ** 3)
 
     df['DELIVERY_DATE'] = pd.Series(dtype='str')
-
+    
     # get tracking info from  P1 API
     Tracker = P1Helper() 
 
@@ -94,17 +94,21 @@ def generateLTLReport(show, file):
         ordnum = df.loc[i, ['ORDER_NUMBER']][0] 
         trackingPbar.set_description(f'Tracking {ordnum}')
         try:
-           
             trackstat = Tracker.track(ordnum)
 
             df.loc[i, ['DELIVERY_STATUS']] = trackstat['status']
             #print(df.loc[i, ['DELIVERY_STATUS']])
             df.loc[i, ['DELIVERY_DATE']] = trackstat['deliveryDate']
-            #print(df.loc[i, ['DELIVERY_DATE']])
+
         except:
             continue
-
     
+    # get just the ship-to state
+    df['SHIP_TO_ADDRESS'] = df['SHIP_TO_ADDRESS'].apply(lambda x : x[-8:-6])
+    df['DELIVERY_DATE'] = pd.to_datetime(df.DELIVERY_DATE)
+    df['SHIP_DATE'] = pd.to_datetime(df.SHIP_DATE)
+    
+
     generateLTLPlots(df, show)
 
 def generateLTLPlots(df, show):
@@ -116,10 +120,36 @@ def generateLTLPlots(df, show):
     volByDay[0].set_ylabel('Weight (lbs)')
     volByDay[1].set_ylabel('Volume (Cubic Feet)')
 
+    # shipping cost by state bar plot
+    costPivot = df.pivot_table(index='SHIP_TO_ADDRESS', columns = ['LTL_CARRIER'], values='SHIPPING_COST', aggfunc='mean')
+    costplot = costPivot.plot(kind='barh', stacked=True, figsize=(20,10))
+    costplot.set_title('Shipping Cost by State')
+
+    # cost by carrier bar plot
+    costPivot = df.pivot_table(index='LTL_CARRIER', columns = ['SHIP_TO_ADDRESS'], values='SHIPPING_COST', aggfunc='mean')
+    costplot2 = costPivot.plot(kind='barh', stacked=True, figsize=(20,10))
+    costplot2.set_title('Shipping Cost by Carrier')
+
+    # transit time by carrier plot
+    df['TRANSIT_TIME'] = (df['DELIVERY_DATE'] - df['SHIP_DATE']).dt.days
+    tranplot = df.boxplot(column=['TRANSIT_TIME'], by=['LTL_CARRIER'], figsize=(20,10))
+    tranplot.set_title('Transit Times by Carrier')
+
+    # transit time by state plot
+    tranplot2 = df.boxplot(column=['TRANSIT_TIME'], by=['SHIP_TO_ADDRESS'], figsize=(20,10))
+    tranplot2.set_title('Transit Times by State')
+
+    
+
     # save plot files
     qtyByDay.figure.savefig('LTL/QTY-By-Day.pdf')
     qtyBySku.figure.savefig('LTL/QTY-By-SKU.pdf')
     plt.savefig('LTL/Volume-By-Day.pdf')
+    costplot.figure.savefig('LTL/Cost-by-State.pdf')
+    costplot2.figure.savefig('LTL/Cost-by-Carrier.pdf')
+    tranplot.figure.savefig('LTL/Transit-Time-by-Carrier.pdf')
+    tranplot2.figure.savefig('LTL/Transit-Time-by-State.pdf')
+
 
     if show:
         plt.show()

@@ -27,16 +27,19 @@ class P1Helper():
       raise Exception('Shipment not found.')
     
     statuses = trackingResultJSON['shipments'][0]['trackingStatuses']
+    #print(statuses)
 
     status = 'In Transit'
     deliveryDate = ''
 
     for i in statuses:
 
-
-      if (i['status'] == 'Completed') or ('Completed' in i['statusReason']) :
-        status = 'Delivered'
-        deliveryDate = i['timeStamp'][:10]
+      try:
+        if (i['status'] == 'Completed') or ('Completed' in i['statusReason']) :
+          status = 'Delivered'
+          deliveryDate = i['timeStamp'][:10]
+      except:
+        pass
       
     return {'status' : status,
             'deliveryDate' : deliveryDate}
