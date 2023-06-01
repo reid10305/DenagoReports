@@ -3,7 +3,7 @@ SELECT
 	Transaction.TranID AS Order_Number,
 	Item.ItemID AS SKU,
 	TransactionLine.Quantity AS QTY,
-	Item.weight AS UnitWeight,
+	Item.weight AS Unit_Weight,
 	( Item.CustItemItem_Length *
 	  Item.CustItemItem_Width * 
 	  Item.CustItemItem_Height ) AS Unit_Volume
