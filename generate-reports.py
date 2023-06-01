@@ -114,7 +114,7 @@ def generateLTLReport(show, file):
 
 def generateLTLPlots(df, show):
     ''' generate LTL Plots '''
-
+    #df.groupby('SHIP_DATE')
     fig, ax = plt.subplots()
     
     qtyByDay = df.plot(x='SHIP_DATE', y = ['QTY'], kind='scatter', title = 'QTY Per Day', grid = True, rot=45,figsize=(20,10))
