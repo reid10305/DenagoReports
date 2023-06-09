@@ -1,0 +1,20 @@
+SELECT
+	Transaction.TranID AS Order_Number,
+	Transaction.TranDate AS Date,
+	Item.ItemID as SKU,
+	TransactionLine.Quantity AS QTY,
+	TransactionShipment.ShippingMethod AS Carrier
+FROM
+	Transaction INNER JOIN TransactionLine ON 	
+		(Transaction.ID = TransactionLine.Transaction)
+	JOIN TransactionShipment ON 
+		(Transaction.ID = TransactionShipment.Doc)
+	JOIN Item ON
+		(TransactionLine.Item = Item.ID)
+	JOIN Entity ON
+		(Transaction.Entity = Entity.ID)
+WHERE
+	Entity.EntityID = 'Denago.com' AND
+	BUILTIN.DF(Transaction.Status) = 'Sales Order : Billed' AND
+	Item.ItemID <> 'General Discount' AND 
+	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO7', 'START' )
