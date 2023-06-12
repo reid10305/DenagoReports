@@ -1,6 +1,7 @@
 SELECT
 	Transaction.TranID AS Order_Number,
 	Transaction.TranDate AS Date,
+	Transaction.ShipDate AS Ship_Date,
 	Item.ItemID as SKU,
 	TransactionLine.Quantity AS QTY,
 	TransactionShipment.ShippingMethod AS Carrier
