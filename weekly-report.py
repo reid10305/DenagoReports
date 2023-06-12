@@ -9,6 +9,9 @@ def generateWeeklyReport(show, file):
 
     # make qty positive
     df['QTY'] = df['QTY'].apply(lambda x: x*-1)
+    # date formatting
+    df['SHIP_DATE'] = pd.to_datetime(df.SHIP_DATE)
+    df['DATE'] = pd.to_datetime(df.DATE)
     
     # qty by sku pivot
     qtypivot = df.pivot_table(index='SKU', columns=['CARRIER'], values='QTY', aggfunc='sum')
@@ -16,6 +19,20 @@ def generateWeeklyReport(show, file):
     qtyplot.set_title('Qty Shipped by Carrier')
     
     qtyplot.figure.savefig('Qty-Shipped-by-Carrier')
+    
+    # time to fulfill
+    df['FULFILLMENT_TIME'] = (df['SHIP_DATE'] - df['DATE']).dt.days
+    fulfillplot = df.boxplot(column=['FULFILLMENT_TIME'], by=['QTY'], figsize=(20,10))
+    fulfillplot.set_title('Fulfillment Time by Order Size')
+    fulfillplot.figure.savefig('Fullfillment-Time-by-Order-Size')
+    
+    fulfillplot2 = df.boxplot(column=['FULFILLMENT_TIME'], by=['DATE'], figsize=(20,10))
+    fulfillplot2.set_title('Fulfillment Time by Day')
+    fulfillplot2.figure.savefig('Fullfillment-Time-by-Day')
+    
+    fulfillplot3 = df.plot(kind='barh', x='ORDER_NUMBER', y=['FULFILLMENT_TIME'], figsize=(10,30), grid=True, title='Fulfillment Time by Order', fontsize=10)
+    fulfillplot3.figure.savefig('Fullfill-Time-by-Order')
+    plt.xlabel('Days')
     
     if show:
         plt.show()
