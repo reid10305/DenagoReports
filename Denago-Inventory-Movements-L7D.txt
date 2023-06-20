@@ -1,0 +1,22 @@
+SELECT 
+	Transaction.TranID AS TRANSID,
+	Transaction.Type AS TRANSTYPE,
+	Transaction.TranDate AS DATE,	
+	Item.ItemID AS SKU,
+	TransactionLine.Quantity AS QTY,
+	Location.FullName AS LOCATION
+FROM 
+	Transaction INNER JOIN TransactionLine ON 
+		(Transaction.ID = TransactionLine.Transaction)
+	JOIN Item ON
+		(TransactionLine.Item = Item.ID)
+	JOIN Location ON 
+		(TransactionLine.Location = Location.ID)
+WHERE
+	(Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO7', 'START' ) OR -- L7D or Today
+	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'TODAY', 'START' )) 
+	AND
+	(Transaction.Type = 'InvTrnfr' OR -- inventory adjust or transfer
+	 Transaction.Type = 'InvAdjst')
+	AND 
+	(Item.CUSTITEMPRODUCT_BRAND_NAME = 12) -- Denago products only
