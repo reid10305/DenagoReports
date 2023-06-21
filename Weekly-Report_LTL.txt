@@ -18,4 +18,6 @@ WHERE
 	Entity.EntityID = 'Denago.com' AND
 	BUILTIN.DF(Transaction.Status) = 'Sales Order : Billed' AND
 	Item.ItemID <> 'General Discount' AND
+	TransactionShipment.ShippingMethod <> 'USPS Priority Mail' AND
+	TransactionShipment.ShippingMethod <> 'USPS First Class Mail' AND
 	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO7', 'START')
