@@ -20,3 +20,10 @@ WHERE
 	 Transaction.Type = 'InvAdjst')
 	AND 
 	(Item.CUSTITEMPRODUCT_BRAND_NAME = 12) -- Denago products only
+ORDER BY 
+	Transaction.TranID,
+	Transaction.TranDate,
+	Transaction.Type,
+	Item.ItemID,
+	TransactionLine.Quantity,
+	Location.FullName
