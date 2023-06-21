@@ -4,7 +4,9 @@ SELECT
 	Transaction.ShipDate AS Ship_Date,
 	Item.ItemID as SKU,
 	TransactionLine.Quantity AS QTY,
-	TransactionShipment.ShippingMethod AS Carrier
+	Transaction.ShipCarrier,
+	TransactionShipment.ShippingMethod AS Carrier,
+	Transaction.CUSTBODYTRACKING_STATUS AS Tracking_Status
 FROM
 	Transaction INNER JOIN TransactionLine ON 	
 		(Transaction.ID = TransactionLine.Transaction)
@@ -18,4 +20,7 @@ WHERE
 	Entity.EntityID = 'Denago.com' AND
 	BUILTIN.DF(Transaction.Status) = 'Sales Order : Billed' AND
 	Item.ItemID <> 'General Discount' AND 
+	(TransactionShipment.ShippingMethod = 'UPS Ground' OR
+	TransactionShipment.ShippingMethod = 'USPS Priority Mail' OR
+	TransactionShipment.ShippingMethod = 'USPS First Class Mail') AND
 	Transaction.TranDate >= BUILTIN.RELATIVE_RANGES( 'DAGO7', 'START' )
